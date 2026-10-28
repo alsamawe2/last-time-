@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>من سيربح العمام</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d1322;
+            --card-bg: #182238;
+            --card-border: #273552;
+            --accent-color: #3a86ff;
+            --accent-hover: #2563eb;
+            --text-main: #ffffff;
+            --text-muted: #8d99ae;
+            --correct-bg: #10b981;
+            --correct-hover: #059669;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-bottom: 30px;
+        }
+
+        /* التصنيفات العلوية */
+        .categories-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            scrollbar-width: none;
+        }
+
+        .categories-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .cat-chip {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .cat-chip.active {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+        }
+
+        /* بطاقة السؤال */
+        .question-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 24px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .question-meta {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: 800;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+
+        /* الجواب المباشر */
+        .answer-box {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--correct-bg);
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 5px;
+        }
+
+        .answer-label {
+            font-size: 12px;
+            color: var(--correct-bg);
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .answer-text {
+            font-size: 18px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        /* الأزرار الرئيسية */
+        .btn-main {
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+
+        .btn-main:active {
+            opacity: 0.8;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 0 5px;
+        }
+
+        .btn-reset {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* قسم المشتركين وتحديد من اجاب */
+        .section-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin-top: 10px;
+        }
+
+        .players-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .player-input {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 12px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .btn-add {
+            background: #ffffff;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            padding: 0 20px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .players-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .player-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .player-name {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .player-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .player-score {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .btn-delete {
+            color: var(--text-muted);
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* أزرار الإجابة الصحيحة لكل لاعب */
+        .correct-selectors {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 5px;
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        .selector-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .btn-player-correct {
+            background: rgba(58, 134, 255, 0.15);
+            border: 1px solid var(--accent-color);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-player-correct:active {
+            background: var(--accent-color);
+        }
+
+        .footer-note {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- شريط التصنيفات -->
+        <div class="categories-scroll" id="categoryChips">
+            <div class="cat-chip active" data-cat="الكل">الكل</div>
+            <div class="cat-chip" data-cat="رياضة">رياضة</div>
+            <div class="cat-chip" data-cat="جغرافيا">جغرافيا</div>
+            <div class="cat-chip" data-cat="أدب">أدب</div>
+            <div class="cat-chip" data-cat="فنون">فنون</div>
+            <div class="cat-chip" data-cat="تاريخ">تاريخ</div>
+            <div class="cat-chip" data-cat="سينما">سينما</div>
+            <div class="cat-chip" data-cat="أغاني">أغاني</div>
+        </div>
+
+        <!-- بطاقة السؤال والجواب -->
+        <div class="question-card">
+            <div class="question-meta" id="questionMeta">جاهز؟</div>
+            <div class="question-text" id="questionText">اختر تصنيفًا أو اترك «الكل» ثم اضغط «سؤال جديد».</div>
+            
+            <!-- الجواب المباشر -->
+            <div class="answer-box" id="answerBox" style="display: none;">
+                <div class="answer-label">الجواب الصحيح:</div>
+                <div class="answer-text" id="answerText">-</div>
+            </div>
+        </div>
+
+        <!-- أزرار اختيار من أجاب صح (تظهر عند وجود سؤال) -->
+        <div class="correct-selectors" id="correctSelectors" style="display: none;">
+            <div class="selector-title">منو من المشتركين جاوب صح؟</div>
+            <div id="playerSelectorButtons" style="display: flex; flex-direction: column; gap: 6px;"></div>
+        </div>
+
+        <!-- زر سؤال جديد -->
+        <button class="btn-main" id="nextBtn">سؤال جديد</button>
+
+        <div class="stats-row">
+            <button class="btn-reset" id="resetBtn">إعادة الأسئلة</button>
+            <span id="remainingCount">المتبقي: 0 سؤال</span>
+        </div>
+
+        <!-- قسم المشتركين -->
+        <div class="section-title">اللاعبون</div>
+        
+        <div class="players-input-group">
+            <input type="text" class="player-input" id="playerNameInput" placeholder="اسم اللاعب">
+            <button class="btn-add" id="addPlayerBtn">إضافة</button>
+        </div>
+
+        <div class="players-list" id="playersList"></div>
+
+        <div class="footer-note">حول</div>
+
+    </div>
+
+    <script>
+        // بنية قاعدة الأسئلة (خالية تماماً من أسئلة المخرجين)
+        const questionsData = {
+            "تاريخ": [
+                {q: "في أي عام وقعت معركة عين جالوت؟", a: "1260 م"},
+                {q: "من هو مؤسس الدولة الأموية؟", a: "معاوية بن أبي سفيان"},
+                {q: "ما هي عاصمة الدولة العباسية لفترة طويلة؟", a: "بغداد"},
+                {q: "في أي عام تم فتح القسطنطينية على يد محمد الفاتح؟", a: "1453 م"},
+                {q: "من هو القائد المسلم الذي فتح الأندلس؟", a: "طارق بن زياد"}
+            ],
+            "أدب": [
+                {q: "من هو الشاعر الملقب بـ (أمير الشعراء)؟", a: "أحمد شوقي"},
+                {q: "من هو مؤلف رواية (ثلاثية القاهرة)؟", a: "نجيب محفوظ"},
+                {q: "صاحب معلقة (قفا نبكِ من ذكرى حبيب ومنزل) هو؟", a: "امرؤ القيس"},
+                {q: "من كتب ملحمة (الكوميديا الإلهية)؟", a: "دانتي أليغييري"},
+                {q: "ما هو اسم الشاعر الملقب بـ (شاعر النيل)؟", a: "حافظ إبراهيم"}
+            ],
+            "فنون": [
+                {q: "من هو الرسام الذي رسم لوحة (الموناليزا)؟", a: "ليوناردو دا فينشي"},
+                {q: "ما هي المدرسة الفنية التي أسسها بابلو بيكاسو؟", a: "المدرسة التكعيبية"},
+                {q: "من هو النحات المصري الشهير صاحب تمثال (نهضة مصر)؟", a: "محمود مختار"},
+                {q: "لوحة (ليلة النجوم / Starry Night) من رسم الفنان؟", a: "فينسنت فان غوخ"},
+                {q: "أي متحف يضم لوحة الموناليزا الأصلية؟", a: "متحف اللوفر في باريس"}
+            ],
+            "سينما": [
+                {q: "ما هو أول فيلم أنيميشن طويل في التاريخ؟", a: "سنو وايت والأقزام السبعة (1937)"},
+                {q: "في أي دولة يُقام مهرجان (كان) السينمائي؟", a: "فرنسا"},
+                {q: "ما هي أكبر جائزة سينمائية تقدمها أكاديمية الفنون بفرنسا؟", a: "جائزة سيزار"},
+                {q: "ما هو اسم الفئة المخصصة لأعلى جوائز السينما الأمريكية؟", a: "الأوسكار (Oscar)"},
+                {q: "في أي عام أقيم أول مهرجان سينمائي في التاريخ (البندقية)؟", a: "1932 م"}
+            ],
+            "أغاني": [
+                {q: "من هو ملحن أغنية (أنت عمري) لكوكب الشرق أم كلثوم؟", a: "محمد عبد الوهاب"},
+                {q: "من هي المطربة الملقبة بـ (جارة القمر)؟", a: "فيروز"},
+                {q: "من كتب كلمات أغنية (قارئة الفنجان) لـ عبد الحليم حافظ؟", a: "نزار قباني"},
+                {q: "ما هو مطرب أغنية (أنا وليلى) الشهيرة؟", a: "كاظم الساهر"},
+                {q: "من هو الملحن الملقب بـ (موسيقار الأجيال)؟", a: "محمد عبد الوهاب"}
+            ],
+            "رياضة": [
+                {q: "كم عدد لاعب فريق كرة القدم داخل الملعب؟", a: "11 لاعب"},
+                {q: "في أي دولة أقيمت أول بطولة كأس عالم 1930؟", a: "الأوروغواي"}
+            ],
+            "جغرافيا": [
+                {q: "ما هي أطول نهر في العالم؟", a: "نهر النيل"},
+                {q: "ما هي أكبر قارة في العالم من حيث المساحة؟", a: "آسيا"}
+            ]
+        };
+
+        // إدارة الحالة
+        let activePools = {};
+        let currentCategoryFilter = "الكل";
+        let categoryOrder = ["تاريخ", "أدب", "فنون", "سينما", "أغاني"];
+        let currentCatIndex = 0;
+        let players = [
+            { id: 1, name: "احمد", score: 0 },
+            { id: 2, name: "سيف", score: 0 },
+            { id: 3, name: "علي", score: 0 }
+        ];
+
+        // تهيئة الأسئلة الخالية من التكرار
+        function initPools() {
+            for (let cat in questionsData) {
+                activePools[cat] = [...questionsData[cat]].sort(() => Math.random() - 0.5);
+            }
+            updateRemainingCount();
+        }
+
+        // تحديث العدّاد
+        function updateRemainingCount() {
+            let total = 0;
+            if (currentCategoryFilter === "الكل") {
+                for (let cat in activePools) total += activePools[cat].length;
+            } else {
+                total = activePools[currentCategoryFilter] ? activePools[currentCategoryFilter].length : 0;
+            }
+            document.getElementById('remainingCount').innerText = `المتبقي: ${total} سؤال`;
+        }
+
+        // جلب السؤال التالي
+        function getNextQuestion() {
+            let selectedCat = currentCategoryFilter;
+
+            if (selectedCat === "الكل") {
+                let attempts = 0;
+                while (attempts < categoryOrder.length) {
+                    let catCandidate = categoryOrder[currentCatIndex];
+                    if (activePools[catCandidate] && activePools[catCandidate].length > 0) {
+                        selectedCat = catCandidate;
+                        break;
+                    }
+                    currentCatIndex = (currentCatIndex + 1) % categoryOrder.length;
+                    attempts++;
+                }
+
+                if (attempts >= categoryOrder.length) {
+                    initPools();
+                    selectedCat = categoryOrder[0];
+                }
+            } else {
+                if (!activePools[selectedCat] || activePools[selectedCat].length === 0) {
+                    activePools[selectedCat] = [...questionsData[selectedCat]].sort(() => Math.random() - 0.5);
+                }
+            }
+
+            if (!activePools[selectedCat] || activePools[selectedCat].length === 0) return null;
+
+            const qItem = activePools[selectedCat].shift();
+            
+            if (currentCategoryFilter === "الكل") {
+                if (!window.catCounter) window.catCounter = 0;
+                window.catCounter++;
+                if (window.catCounter >= 2) {
+                    window.catCounter = 0;
+                    currentCatIndex = (currentCatIndex + 1) % categoryOrder.length;
+                }
+            }
+
+            updateRemainingCount();
+            return { category: selectedCat, ...qItem };
+        }
+
+        // إظهار السؤال والجواب
+        function displayQuestion() {
+            const qData = getNextQuestion();
+            if (!qData) return;
+
+            document.getElementById('questionMeta').innerText = `تصنيف: ${qData.category}`;
+            document.getElementById('questionText').innerText = qData.q;
+            
+            document.getElementById('answerText').innerText = qData.a;
+            document.getElementById('answerBox').style.display = 'block';
+
+            renderPlayerSelectors();
+        }
+
+        // عرض أزرار اختيار المشتركين تحت السؤال
+        function renderPlayerSelectors() {
+            const container = document.getElementById('playerSelectorButtons');
+            container.innerHTML = '';
+
+            if (players.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-muted); font-size:12px; text-align:center;">أضف لاعبين أولاً لحساب النقاط</div>';
+                document.getElementById('correctSelectors').style.display = 'block';
+                return;
+            }
+
+            players.forEach(player => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-player-correct';
+                btn.innerHTML = `<span>${player.name}</span> <span>+1 نقطة 🟢</span>`;
+                btn.onclick = () => {
+                    player.score += 1;
+                    renderPlayers();
+                    displayQuestion();
+                };
+                container.appendChild(btn);
+            });
+
+            document.getElementById('correctSelectors').style.display = 'block';
+        }
+
+        // عرض قائمة المشتركين في الأسفل
+        function renderPlayers() {
+            const list = document.getElementById('playersList');
+            list.innerHTML = '';
+
+            players.forEach(player => {
+                const card = document.createElement('div');
+                card.className = 'player-card';
+                card.innerHTML = `
+                    <span class="player-name">${player.name}</span>
+                    <div class="player-actions">
+                        <span class="player-score">${player.score}</span>
+                        <button class="btn-delete" onclick="deletePlayer(${player.id})">×</button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+
+            if (document.getElementById('correctSelectors').style.display === 'block') {
+                renderPlayerSelectors();
+            }
+        }
+
+        // إضافة لاعب
+        function addPlayer() {
+            const input = document.getElementById('playerNameInput');
+            const name = input.value.trim();
+            if (name) {
+                players.push({ id: Date.now(), name: name, score: 0 });
+                input.value = '';
+                renderPlayers();
+            }
+        }
+
+        // حذف لاعب
+        function deletePlayer(id) {
+            players = players.filter(p => p.id !== id);
+            renderPlayers();
+        }
+
+        document.getElementById('addPlayerBtn').addEventListener('click', addPlayer);
+        document.getElementById('nextBtn').addEventListener('click', displayQuestion);
+        
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            initPools();
+            document.getElementById('questionMeta').innerText = "تمت إعادة التهيئة";
+            document.getElementById('questionText').innerText = "اضغط «سؤال جديد» للبدء";
+            document.getElementById('answerBox').style.display = 'none';
+            document.getElementById('correctSelectors').style.display = 'none';
+        });
+
+        document.querySelectorAll('.cat-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                currentCategoryFilter = this.getAttribute('data-cat');
+                updateRemainingCount();
+            });
+        });
+
+        initPools();
+        renderPlayers();
+    </script>
+</body>
+</html>
